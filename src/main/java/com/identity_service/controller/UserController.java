@@ -23,30 +23,38 @@ public class UserController {
     UserService userService;
 
     @PostMapping
-    ApiResponse<User> createUser(@RequestBody @Valid UserCreationRequest request){
-        ApiResponse<User> apiResponse = new ApiResponse<>();
+    ApiResponse<UserResponse> createUser(@RequestBody @Valid UserCreationRequest request){
+        ApiResponse<UserResponse> apiResponse = new ApiResponse<>();
         apiResponse.setResult(userService.createUser(request));
         return apiResponse;
     }
 
     @GetMapping
-    List<User> getAllUsers(){
-        return userService.getAllUsers();
+    ApiResponse<List<UserResponse>> getAllUsers(){
+        ApiResponse<List<UserResponse>> apiResponse = new ApiResponse<>();
+        apiResponse.setResult(userService.getAllUsers());
+        return apiResponse;
     }
 
     @GetMapping("/{userId}")
-    UserResponse getUserById(@PathVariable String userId){
-        return userService.getUserById(userId);
+    ApiResponse<UserResponse> getUserById(@PathVariable String userId){
+        ApiResponse<UserResponse> apiResponse = new ApiResponse<>();
+        apiResponse.setResult(userService.getUserById(userId));
+        return apiResponse;
     }
 
     @PutMapping("/{userId}")
-    UserResponse updateUser(@PathVariable String userId, @RequestBody UserUpdateRequest request){
-        return userService.updateUser(userId, request);
+    ApiResponse<UserResponse> updateUser(@PathVariable String userId, @RequestBody UserUpdateRequest request){
+        ApiResponse<UserResponse> apiResponse = new ApiResponse<>();
+        apiResponse.setResult(userService.updateUser(userId, request));
+        return apiResponse;
     }
 
     @DeleteMapping("/{userId}")
-    String deleteUser(@PathVariable String userId){
+    ApiResponse<String> deleteUser(@PathVariable String userId){
+        ApiResponse<String> apiResponse = new ApiResponse<>();
         userService.deleteUserById(userId);
-        return "User deleted";
+        apiResponse.setMessage("User deleted successfully");
+        return apiResponse;
     }
 }
