@@ -10,6 +10,7 @@ public enum ErrorCode {
     INVALID_USERNAME(7, "Username must be between 3 to 20 characters"),
     INVALID_PASSWORD(8, "Password must be at least 6 characters"),
     INVALID_EMAIL(9, "Email must be available"),
+    UNAUTHORIZED(10, "Unauthorized"),
     ;
     private int code;
     private String message;
