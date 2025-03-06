@@ -11,6 +11,7 @@ public enum ErrorCode {
     INVALID_PASSWORD(8, "Password must be at least 6 characters"),
     INVALID_EMAIL(9, "Email must be available"),
     UNAUTHORIZED(10, "Unauthorized"),
+    UNAUTHENTICATED(11, "Unauthenticated"),
     ;
     private int code;
     private String message;
