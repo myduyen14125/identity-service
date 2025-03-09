@@ -1,27 +1,31 @@
 package com.identity_service.entity;
 
-import com.identity_service.RoleType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import lombok.Getter;
-import lombok.Setter;
+import com.identity_service.enums.RoleType;
+import jakarta.persistence.*;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 @Entity
 @Getter @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
-    private String username;
-    private String password;
-    private String firstName;
-    private String lastName;
-    private String email;
-    private Integer phone;
-    private RoleType role;
-    private LocalDate dob;
+    String id;
+    String username;
+    String password;
+    String firstName;
+    String lastName;
+    String email;
+    Integer phone;
+//    RoleType role;
+    @ElementCollection
+    Set<RoleType> roles;
+    LocalDate dob;
 }

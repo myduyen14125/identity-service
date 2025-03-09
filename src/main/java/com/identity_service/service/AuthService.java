@@ -4,6 +4,7 @@ import com.identity_service.dto.request.AuthRequest;
 import com.identity_service.dto.request.IntrospectRequest;
 import com.identity_service.dto.response.AuthResponse;
 import com.identity_service.dto.response.IntrospectResponse;
+import com.identity_service.entity.User;
 import com.identity_service.exception.AppException;
 import com.identity_service.exception.ErrorCode;
 import com.identity_service.repository.UserRepository;
@@ -23,11 +24,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Collection;
 import java.util.Date;
+import java.util.StringJoiner;
 
 @Service
 @RequiredArgsConstructor
@@ -51,7 +55,7 @@ public class AuthService {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
 
-        val token = generateToken(request.getUsername());
+        val token = generateToken(user);
 
         return AuthResponse.builder()
                 .accessToken(token)
@@ -59,16 +63,16 @@ public class AuthService {
                 .build();
     }
 
-    private String generateToken(String username) {
+    private String generateToken(User user) {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
-                .subject(username)
+                .subject(user.getUsername())
                 .issuer("identity-service.com")
                 .issueTime(new Date())
                 .expirationTime(new Date(
                         Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli()
                 ))
-                .claim("authorities", "ROLE_USER")
+                .claim("scope", buildScope(user))
                 .build();
         Payload payload = new Payload(jwtClaimsSet.toJSONObject());
         JWSObject jwsObject = new JWSObject(header, payload);
@@ -90,5 +94,14 @@ public class AuthService {
         return IntrospectResponse.builder()
                 .valid(verified && expirationDate.after(new Date()))
                 .build();
+    }
+
+    // build scope is String contains Role user from Entity
+    private String buildScope(User user) {
+        StringJoiner stringJoiner = new StringJoiner(" "); // by the standard of scope in JWT -> mush separate by " "
+        if (!CollectionUtils.isEmpty(user.getRoles())) {
+            user.getRoles().forEach(role -> stringJoiner.add(role.name()));
+        };
+        return stringJoiner.toString();
     }
 }

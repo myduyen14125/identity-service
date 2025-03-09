@@ -1,10 +1,11 @@
 package com.identity_service.dto.response;
 
-import com.identity_service.RoleType;
+import com.identity_service.enums.RoleType;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 @Data
 @Builder
@@ -19,6 +20,7 @@ public class UserResponse {
     String lastName;
     String email;
     Integer phone;
-    RoleType role;
+//    RoleType role;
+    Set<RoleType> roles;
     LocalDate dob;
 }

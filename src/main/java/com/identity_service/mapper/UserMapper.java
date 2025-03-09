@@ -1,6 +1,6 @@
 package com.identity_service.mapper;
 
-import com.identity_service.RoleType;
+import com.identity_service.enums.RoleType;
 import com.identity_service.dto.request.UserCreationRequest;
 import com.identity_service.dto.request.UserUpdateRequest;
 import com.identity_service.dto.response.UserResponse;
@@ -12,7 +12,7 @@ import org.mapstruct.Named;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {
-    @Mapping(source = "role", target = "role", qualifiedByName = "mapRole")
+//    @Mapping(source = "role", target = "role", qualifiedByName = "mapRole") // this is too mapping the role from RoleType to Integer
     User toUser(UserCreationRequest request);
 
     @Named("mapRole")
@@ -20,7 +20,7 @@ public interface UserMapper {
         return role != null ? RoleType.fromValue(role) : null;
     }
 
-    @Mapping(source = "role", target = "role", qualifiedByName = "mapRole")
+//    @Mapping(source = "role", target = "role", qualifiedByName = "mapRole")
     void updateUser(@MappingTarget User user, UserUpdateRequest request);
 
     UserResponse toUserResponse(User user);
