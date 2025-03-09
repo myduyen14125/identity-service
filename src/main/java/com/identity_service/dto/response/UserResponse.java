@@ -15,7 +15,7 @@ import java.util.Set;
 public class UserResponse {
     String id;
     String username;
-    String password;
+    String password; // no need to return it in future
     String firstName;
     String lastName;
     String email;
