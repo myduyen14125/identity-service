@@ -47,7 +47,8 @@ public class SecurityConfig {
                         oAuth2.jwt(jwtConfigurer -> jwtConfigurer
                                 .decoder(jwtDecoder())
                                 .jwtAuthenticationConverter(jwtAuthenticationConverter())
-                        )
+                                )
+                                .authenticationEntryPoint(new JwtAuthenticationEntryPoint())
 
                 );
 
