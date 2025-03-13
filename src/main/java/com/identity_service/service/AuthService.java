@@ -100,7 +100,7 @@ public class AuthService {
     private String buildScope(User user) {
         StringJoiner stringJoiner = new StringJoiner(" "); // by the standard of scope in JWT -> mush separate by " "
         if (!CollectionUtils.isEmpty(user.getRoles())) {
-            user.getRoles().forEach(role -> stringJoiner.add(role.name()));
+//            user.getRoles().forEach(role -> stringJoiner.add(role.name()));
         };
         return stringJoiner.toString();
     }

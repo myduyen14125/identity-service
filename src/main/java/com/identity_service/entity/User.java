@@ -24,8 +24,7 @@ public class User {
     String lastName;
     String email;
     Integer phone;
-//    RoleType role;
-    @ElementCollection
-    Set<RoleType> roles;
+    @ManyToMany
+    Set<Role> roles;
     LocalDate dob;
 }

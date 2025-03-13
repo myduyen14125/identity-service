@@ -21,6 +21,6 @@ public class UserResponse {
     String email;
     Integer phone;
 //    RoleType role;
-    Set<RoleType> roles;
+//    Set<String> roles;
     LocalDate dob;
 }

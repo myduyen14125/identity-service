@@ -42,7 +42,7 @@ public class UserService {
         if (request.getRole() == null) {
             HashSet<RoleType> roles = new HashSet<>();
             roles.add(RoleType.getDefault());
-            user.setRoles(roles);
+//            user.setRoles(roles);
         }
 
         userRepository.save(user);
