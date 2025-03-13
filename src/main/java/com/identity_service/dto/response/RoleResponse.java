@@ -1,22 +1,17 @@
-package com.identity_service.entity;
+package com.identity_service.dto.response;
 
-import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.util.List;
 import java.util.Set;
 
-@Entity
-@Getter @Setter
-@Builder
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Role {
-    @Id
+public class RoleResponse {
     String name;
     String description;
-    @ManyToMany
-    Set<Permission> permissions;
+    Set<PermissionResponse> permissions;
 }
