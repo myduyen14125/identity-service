@@ -1,7 +1,7 @@
 package com.identity_service.exception;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import jakarta.validation.ConstraintViolation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -10,10 +10,16 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.identity_service.dto.response.ApiResponse;
 
-@ControllerAdvice
-public class GlobalExceptionHandler {
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
-    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+@ControllerAdvice
+@Slf4j
+public class GlobalExceptionHandler {
+    private static final String MIN_ATTRIBUTE = "min";
+    private static final String MAX_ATTRIBUTE = "max";
+    Map<String, Object> attributes = null;
 
     @ExceptionHandler(AppException.class)
     ResponseEntity<ApiResponse> handleAppException(AppException e) {
@@ -49,17 +55,28 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     ResponseEntity<ApiResponse> handleValidationException(MethodArgumentNotValidException e) {
-//        return ResponseEntity.badRequest().body(e.getFieldError().getDefaultMessage());
         String errorKey = e.getFieldError().getDefaultMessage();
         ErrorCode errorCode = ErrorCode.INVALID_PARAM;
         try {
             errorCode = ErrorCode.valueOf(errorKey);
+
+            var constraintViolation = e.getBindingResult()
+                    .getAllErrors().getFirst().unwrap(ConstraintViolation.class);
+            attributes = constraintViolation.getConstraintDescriptor().getAttributes();
+            log.info("Attributes" + attributes.toString());
         } catch (IllegalArgumentException illegalArgumentException) {
             // log error
         }
         ApiResponse apiResponse = new ApiResponse();
         apiResponse.setCode(errorCode.getCode());
-        apiResponse.setMessage(errorCode.getMessage());
+        apiResponse.setMessage(Objects.nonNull(attributes) ? mapAttribute(errorCode.getMessage(), attributes) : errorCode.getMessage());
         return ResponseEntity.badRequest().body(apiResponse);
+    }
+
+    private String mapAttribute(String message, Map<String, Object> attributes) {
+        String minValue = attributes.get(MIN_ATTRIBUTE).toString();
+        String maxValue = attributes.get(MAX_ATTRIBUTE).toString();
+        return message.replace("{" + MIN_ATTRIBUTE + "}", minValue)
+                .replace("{" + MAX_ATTRIBUTE + "}", maxValue);
     }
 }
