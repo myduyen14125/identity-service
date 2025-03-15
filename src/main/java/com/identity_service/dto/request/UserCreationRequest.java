@@ -6,6 +6,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 @Data
 @Builder
@@ -22,6 +23,5 @@ public class UserCreationRequest {
     @Email(message = "INVALID_EMAIL")
     private String email;
     private Integer phone;
-    private Integer role;
     private LocalDate dob;
 }

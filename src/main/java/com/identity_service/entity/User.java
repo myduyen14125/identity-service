@@ -6,6 +6,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -25,6 +26,6 @@ public class User {
     String email;
     Integer phone;
     @ManyToMany
-    Set<Role> roles;
+    List<Role> roles;
     LocalDate dob;
 }

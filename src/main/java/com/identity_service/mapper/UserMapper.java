@@ -20,7 +20,7 @@ public interface UserMapper {
         return role != null ? RoleType.fromValue(role) : null;
     }
 
-//    @Mapping(source = "role", target = "role", qualifiedByName = "mapRole")
+    @Mapping(target = "roles", ignore = true)
     void updateUser(@MappingTarget User user, UserUpdateRequest request);
 
     UserResponse toUserResponse(User user);

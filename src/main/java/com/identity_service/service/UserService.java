@@ -8,10 +8,12 @@ import com.identity_service.enums.RoleType;
 import com.identity_service.exception.AppException;
 import com.identity_service.exception.ErrorCode;
 import com.identity_service.mapper.UserMapper;
+import com.identity_service.repository.RoleRepository;
 import com.identity_service.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.val;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,6 +30,7 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserService {
     UserRepository userRepository;
+    RoleRepository roleRepository;
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
 
@@ -39,11 +42,11 @@ public class UserService {
         User user = userMapper.toUser(request);
 
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        if (request.getRole() == null) {
-            HashSet<RoleType> roles = new HashSet<>();
-            roles.add(RoleType.getDefault());
-//            user.setRoles(roles);
-        }
+//        if (request.getRole() == null) {
+//            HashSet<RoleType> roles = new HashSet<>();
+//            roles.add(RoleType.getDefault());
+////            user.setRoles(roles);
+//        }
 
         userRepository.save(user);
         return userMapper.toUserResponse(user);
@@ -53,11 +56,16 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         userMapper.updateUser(user, request);
-//        userRepository.save(user); todo: why not save but it still save
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        val listRoles = roleRepository.findAllById(request.getRoles());
+        user.setRoles(listRoles);
+        userRepository.save(user);
         return userMapper.toUserResponse(user);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasAuthority('APPROVE_POST')")
+    @PreAuthorize("hasRole('ADMIN') and hasAuthority('APPROVE_POST')")
     public List<UserResponse> getAllUsers() {
         List<User> users = userRepository.findAll();
         List<UserResponse> userResponses = new ArrayList<>();
@@ -70,7 +78,7 @@ public class UserService {
     @PostAuthorize("returnObject.username == authentication.name or hasRole('ADMIN')")
     public UserResponse getUserById(String id) {
         return userMapper.toUserResponse(userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found")));
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND)));
     }
 
     public void deleteUserById(String id) {
