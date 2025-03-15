@@ -17,6 +17,7 @@ public enum ErrorCode {
     INVALID_EMAIL(9, "Email must be available", HttpStatus.BAD_REQUEST),
     UNAUTHORIZED(10, "You do not have permission", HttpStatus.FORBIDDEN), // 403
     UNAUTHENTICATED(11, "Unauthenticated", HttpStatus.UNAUTHORIZED), // 401
+    INVALID_DOB(12, "Invalid Date of Birth", HttpStatus.BAD_REQUEST), // 400
     ;
     private int code;
     private String message;

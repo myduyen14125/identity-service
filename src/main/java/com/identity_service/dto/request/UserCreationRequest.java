@@ -1,5 +1,6 @@
 package com.identity_service.dto.request;
 
+import com.identity_service.validator.DobConstraint;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -23,5 +24,6 @@ public class UserCreationRequest {
     @Email(message = "INVALID_EMAIL")
     private String email;
     private Integer phone;
+    @DobConstraint(min = 18, message = "INVALID_DOB")
     private LocalDate dob;
 }
