@@ -50,6 +50,12 @@ public class AuthService {
     @NonFinal // make non final so that it will not be injected to constructor
     @Value("${jwt.signerKey}")
     protected String SIGNER_KEY;
+    @NonFinal
+    @Value("${jwt.valid-duration}")
+    protected long VALID_DURATION;
+    @NonFinal
+    @Value("${jwt.refreshable-duration}")
+    protected long REFRESHABLE_DURATION;
 
     public AuthResponse authenticate(AuthRequest request) {
         val user = userRepository.findByUsername(request.getUsername())
@@ -71,19 +77,23 @@ public class AuthService {
     }
 
     public void logout(String token) throws ParseException, JOSEException {
-        val signedToken = verifyToken(token);
-        String jti = signedToken.getJWTClaimsSet().getJWTID();
-        Date expirationTime = signedToken.getJWTClaimsSet().getExpirationTime();
-        InvalidatedToken invalidatedToken = InvalidatedToken.builder()
-                .id(jti)
-                .expirationTime(expirationTime)
-                .build();
+        try {
+            val signedToken = verifyToken(token, true);
+            String jti = signedToken.getJWTClaimsSet().getJWTID();
+            Date expirationTime = signedToken.getJWTClaimsSet().getExpirationTime();
+            InvalidatedToken invalidatedToken = InvalidatedToken.builder()
+                    .id(jti)
+                    .expirationTime(expirationTime)
+                    .build();
 
-        tokenRepository.save(invalidatedToken);
+            tokenRepository.save(invalidatedToken);
+        } catch (AppException e) {
+            log.debug("Error logging out, Token already expired", e);
+        }
     }
 
     public AuthResponse refreshToken(RefreshRequest request) throws ParseException, JOSEException {
-        var signedJWT = verifyToken(request.getToken());
+        var signedJWT = verifyToken(request.getToken(), true);
         var jti = signedJWT.getJWTClaimsSet().getJWTID();
         var expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
         InvalidatedToken invalidatedToken = InvalidatedToken.builder()
@@ -107,7 +117,7 @@ public class AuthService {
                 .issuer("identity-service.com")
                 .issueTime(new Date())
                 .expirationTime(new Date(
-                        Instant.now().plus(1, ChronoUnit.HOURS).toEpochMilli()
+                        Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli()
                 ))
                 .jwtID(UUID.randomUUID().toString())
                 .claim("scope", buildScope(user))
@@ -127,7 +137,7 @@ public class AuthService {
         val token = request.getToken();
         boolean isValid = true;
         try {
-            verifyToken(token);
+            verifyToken(token, false);
         } catch (Exception e) {
             isValid = false;
         }
@@ -136,10 +146,13 @@ public class AuthService {
                 .build();
     }
 
-    private SignedJWT verifyToken (String token) throws ParseException, JOSEException {
+    private SignedJWT verifyToken (String token, boolean isRefresh) throws ParseException, JOSEException {
         JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
         SignedJWT signedJWT = SignedJWT.parse(token);
-        Date expirationDate = signedJWT.getJWTClaimsSet().getExpirationTime();
+        Date expirationDate = isRefresh ?
+                new Date(signedJWT.getJWTClaimsSet().getIssueTime().toInstant()
+                        .plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS).toEpochMilli())
+                : signedJWT.getJWTClaimsSet().getExpirationTime();
         val verified = signedJWT.verify(verifier);
         if (!(verified && expirationDate.after(new Date()))) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
