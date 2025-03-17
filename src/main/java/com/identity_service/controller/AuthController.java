@@ -3,6 +3,7 @@ package com.identity_service.controller;
 import com.identity_service.dto.request.AuthRequest;
 import com.identity_service.dto.request.IntrospectRequest;
 import com.identity_service.dto.request.LogoutRequest;
+import com.identity_service.dto.request.RefreshRequest;
 import com.identity_service.dto.response.ApiResponse;
 import com.identity_service.dto.response.AuthResponse;
 import com.identity_service.dto.response.IntrospectResponse;
@@ -38,6 +39,14 @@ public class AuthController {
     ApiResponse<Void> logout(@RequestBody LogoutRequest logoutRequest) throws ParseException, JOSEException {
         authService.logout(logoutRequest.getToken());
         return ApiResponse.<Void>builder()
+                .build();
+    }
+
+    @PostMapping("/refresh")
+    ApiResponse<AuthResponse> refresh(@RequestBody RefreshRequest refreshRequest) throws ParseException, JOSEException {
+        AuthResponse authResponse = authService.refreshToken(refreshRequest);
+        return ApiResponse.<AuthResponse>builder()
+                .result(authResponse)
                 .build();
     }
 

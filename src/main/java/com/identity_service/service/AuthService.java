@@ -2,6 +2,7 @@ package com.identity_service.service;
 
 import com.identity_service.dto.request.AuthRequest;
 import com.identity_service.dto.request.IntrospectRequest;
+import com.identity_service.dto.request.RefreshRequest;
 import com.identity_service.dto.response.AuthResponse;
 import com.identity_service.dto.response.IntrospectResponse;
 import com.identity_service.entity.InvalidatedToken;
@@ -28,6 +29,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.sql.Ref;
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -78,6 +80,24 @@ public class AuthService {
                 .build();
 
         tokenRepository.save(invalidatedToken);
+    }
+
+    public AuthResponse refreshToken(RefreshRequest request) throws ParseException, JOSEException {
+        var signedJWT = verifyToken(request.getToken());
+        var jti = signedJWT.getJWTClaimsSet().getJWTID();
+        var expirationTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+        InvalidatedToken invalidatedToken = InvalidatedToken.builder()
+                .id(jti)
+                .expirationTime(expirationTime)
+                .build();
+        tokenRepository.save(invalidatedToken);
+        var username = signedJWT.getJWTClaimsSet().getSubject();
+        var user = userRepository.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        var newToken = generateToken(user);
+        return AuthResponse.builder()
+                .accessToken(newToken)
+                .authenticated(true)
+                .build();
     }
 
     private String generateToken(User user) {
