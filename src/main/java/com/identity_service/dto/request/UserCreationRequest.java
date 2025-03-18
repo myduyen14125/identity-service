@@ -15,7 +15,7 @@ import java.util.Set;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserCreationRequest {
-    @Size(min = 3, max = 20, message = "INVALID_USERNAMES")
+    @Size(min = 3, max = 20, message = "INVALID_USERNAME")
     private String username;
     @Size(min = 6, message = "INVALID_PASSWORD")
     private String password;
