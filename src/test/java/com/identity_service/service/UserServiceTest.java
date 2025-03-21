@@ -4,18 +4,18 @@ import com.identity_service.dto.request.UserCreationRequest;
 import com.identity_service.dto.response.UserResponse;
 import com.identity_service.entity.User;
 import com.identity_service.exception.AppException;
-import com.identity_service.mapper.UserMapper;
 import com.identity_service.repository.UserRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -88,5 +88,27 @@ public class UserServiceTest {
 
         // THEN
         Assertions.assertThat(exception.getErrorCode().getCode()).isEqualTo(3);
+    }
+
+    @Test
+    @WithMockUser(username = "yuuTest")
+    void getMyInfo_validRequest_success() {
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.of(user));
+
+        var response = userService.getMyInfo();
+        Assertions.assertThat(response).isNotNull();
+        Assertions.assertThat(response.getUsername()).isEqualTo(userCreationRequest.getUsername());
+        Assertions.assertThat(response.getFirstName()).isEqualTo(userCreationRequest.getFirstName());
+    }
+
+    @Test
+    @WithMockUser(username = "yuuTest")
+    void getMyInfo_userNotFound_error() {
+        when(userRepository.findByUsername(anyString())).thenReturn(Optional.ofNullable(null));
+
+        // WHEN
+        var exception = assertThrows(AppException.class, () -> userService.getMyInfo());
+
+        Assertions.assertThat(exception.getErrorCode().getCode()).isEqualTo(2);
     }
 }
