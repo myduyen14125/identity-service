@@ -1,6 +1,5 @@
 package com.identity_service.configuration;
 
-import com.identity_service.enums.RoleType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -12,22 +11,16 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
-
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
-    public final String[] PUBLIC_ENDPOINTS = {"/users",
-        "/auth/token", "/auth/introspect", "/auth/logout", "/auth/refresh"
+    public final String[] PUBLIC_ENDPOINTS = {
+        "/users", "/auth/token", "/auth/introspect", "/auth/logout", "/auth/refresh"
     };
     public final String[] PROTECTED_ENDPOINTS = {"/users"};
 
@@ -40,21 +33,18 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         // enable public endpoints
-        httpSecurity.authorizeHttpRequests(request ->
-                        request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
-//                                .requestMatchers(HttpMethod.GET, PROTECTED_ENDPOINTS).hasRole(RoleType.ADMIN.name())
-                                .anyRequest()
-                                .authenticated());
+        httpSecurity.authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS)
+                .permitAll()
+                //                                .requestMatchers(HttpMethod.GET,
+                // PROTECTED_ENDPOINTS).hasRole(RoleType.ADMIN.name())
+                .anyRequest()
+                .authenticated());
 
         // verify endpoints that need accessToken
-        httpSecurity.oauth2ResourceServer(oAuth2 ->
-                        oAuth2.jwt(jwtConfigurer -> jwtConfigurer
-                                .decoder(customJwtDecoder)
-                                .jwtAuthenticationConverter(jwtAuthenticationConverter())
-                                )
-                                .authenticationEntryPoint(new JwtAuthenticationEntryPoint())
-
-                );
+        httpSecurity.oauth2ResourceServer(oAuth2 -> oAuth2.jwt(jwtConfigurer -> jwtConfigurer
+                        .decoder(customJwtDecoder)
+                        .jwtAuthenticationConverter(jwtAuthenticationConverter()))
+                .authenticationEntryPoint(new JwtAuthenticationEntryPoint()));
 
         httpSecurity.csrf(AbstractHttpConfigurer::disable);
         ;

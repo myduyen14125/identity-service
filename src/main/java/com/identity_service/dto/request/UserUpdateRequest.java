@@ -1,12 +1,12 @@
 package com.identity_service.dto.request;
 
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-
 import java.time.LocalDate;
 import java.util.List;
 
-//@Getter @Setter
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
+// @Getter @Setter
 @Data
 @Builder
 @NoArgsConstructor

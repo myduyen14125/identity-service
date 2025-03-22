@@ -1,5 +1,20 @@
 package com.identity_service.service;
 
+import java.text.ParseException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Date;
+import java.util.StringJoiner;
+import java.util.UUID;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
 import com.identity_service.dto.request.AuthRequest;
 import com.identity_service.dto.request.IntrospectRequest;
 import com.identity_service.dto.request.RefreshRequest;
@@ -16,27 +31,12 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.val;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
-
-import java.sql.Ref;
-import java.text.ParseException;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.Collection;
-import java.util.Date;
-import java.util.StringJoiner;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -50,15 +50,18 @@ public class AuthService {
     @NonFinal // make non final so that it will not be injected to constructor
     @Value("${jwt.signerKey}")
     protected String SIGNER_KEY;
+
     @NonFinal
     @Value("${jwt.valid-duration}")
     protected long VALID_DURATION;
+
     @NonFinal
     @Value("${jwt.refreshable-duration}")
     protected long REFRESHABLE_DURATION;
 
     public AuthResponse authenticate(AuthRequest request) {
-        val user = userRepository.findByUsername(request.getUsername())
+        val user = userRepository
+                .findByUsername(request.getUsername())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
 
         // Match user's password
@@ -70,10 +73,7 @@ public class AuthService {
 
         val token = generateToken(user);
 
-        return AuthResponse.builder()
-                .accessToken(token)
-                .authenticated(true)
-                .build();
+        return AuthResponse.builder().accessToken(token).authenticated(true).build();
     }
 
     public void logout(String token) throws ParseException, JOSEException {
@@ -102,12 +102,10 @@ public class AuthService {
                 .build();
         tokenRepository.save(invalidatedToken);
         var username = signedJWT.getJWTClaimsSet().getSubject();
-        var user = userRepository.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        var user =
+                userRepository.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
         var newToken = generateToken(user);
-        return AuthResponse.builder()
-                .accessToken(newToken)
-                .authenticated(true)
-                .build();
+        return AuthResponse.builder().accessToken(newToken).authenticated(true).build();
     }
 
     private String generateToken(User user) {
@@ -117,8 +115,7 @@ public class AuthService {
                 .issuer("identity-service.com")
                 .issueTime(new Date())
                 .expirationTime(new Date(
-                        Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli()
-                ))
+                        Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli()))
                 .jwtID(UUID.randomUUID().toString())
                 .claim("scope", buildScope(user))
                 .build();
@@ -141,23 +138,26 @@ public class AuthService {
         } catch (Exception e) {
             isValid = false;
         }
-        return IntrospectResponse.builder()
-                .valid(isValid)
-                .build();
+        return IntrospectResponse.builder().valid(isValid).build();
     }
 
-    private SignedJWT verifyToken (String token, boolean isRefresh) throws ParseException, JOSEException {
+    private SignedJWT verifyToken(String token, boolean isRefresh) throws ParseException, JOSEException {
         JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
         SignedJWT signedJWT = SignedJWT.parse(token);
-        Date expirationDate = isRefresh ?
-                new Date(signedJWT.getJWTClaimsSet().getIssueTime().toInstant()
-                        .plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS).toEpochMilli())
+        Date expirationDate = isRefresh
+                ? new Date(signedJWT
+                        .getJWTClaimsSet()
+                        .getIssueTime()
+                        .toInstant()
+                        .plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS)
+                        .toEpochMilli())
                 : signedJWT.getJWTClaimsSet().getExpirationTime();
         val verified = signedJWT.verify(verifier);
         if (!(verified && expirationDate.after(new Date()))) {
             throw new AppException(ErrorCode.UNAUTHENTICATED);
         }
-        if (invalidatedTokenRepository.existsById(signedJWT.getJWTClaimsSet().getJWTID())) throw new AppException(ErrorCode.UNAUTHENTICATED);
+        if (invalidatedTokenRepository.existsById(signedJWT.getJWTClaimsSet().getJWTID()))
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
         return signedJWT;
     }
     // build scope is String contains Role user from Entity
@@ -165,15 +165,15 @@ public class AuthService {
         StringJoiner stringJoiner = new StringJoiner(" "); // by the standard of scope in JWT -> mush separate by " "
         if (!CollectionUtils.isEmpty(user.getRoles())) {
             user.getRoles().forEach(role -> {
-                        stringJoiner.add("ROLE_" + role.getName());
-                        if (!CollectionUtils.isEmpty(role.getPermissions())) {
-                            role.getPermissions().forEach(permission -> {
-                                stringJoiner.add(permission.getName());
-                            });
-                        }
-                    }
-                    );
-        };
+                stringJoiner.add("ROLE_" + role.getName());
+                if (!CollectionUtils.isEmpty(role.getPermissions())) {
+                    role.getPermissions().forEach(permission -> {
+                        stringJoiner.add(permission.getName());
+                    });
+                }
+            });
+        }
+        ;
         return stringJoiner.toString();
     }
 }

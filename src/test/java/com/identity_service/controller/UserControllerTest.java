@@ -1,14 +1,9 @@
 package com.identity_service.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.identity_service.dto.request.UserCreationRequest;
-import com.identity_service.dto.response.UserResponse;
-import com.identity_service.service.UserService;
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDate;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatcher;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +16,13 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import java.time.LocalDate;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.identity_service.dto.request.UserCreationRequest;
+import com.identity_service.dto.response.UserResponse;
+import com.identity_service.service.UserService;
+
+import lombok.extern.slf4j.Slf4j;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -69,14 +70,12 @@ public class UserControllerTest {
         // with any args run into userService -> will return the userResponse coz not test this service
         Mockito.when(userService.createUser(ArgumentMatchers.any())).thenReturn(userResponse);
         // when, then (and expect)
-        mockMvc.perform(MockMvcRequestBuilders
-                .post("/users")
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(requestBody))
+        mockMvc.perform(MockMvcRequestBuilders.post("/users")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(requestBody))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("code").value(0))
-                .andExpect(MockMvcResultMatchers.jsonPath("result.id").value("cf0600f538b3"))
-        ;
+                .andExpect(MockMvcResultMatchers.jsonPath("result.id").value("cf0600f538b3"));
         // then
     }
 
@@ -89,16 +88,15 @@ public class UserControllerTest {
         String requestBody = objectMapper.writeValueAsString(userCreationRequest);
 
         // no need because if the request is not invalid, it won't run into the service to check
-//        Mockito.when(userService.createUser(ArgumentMatchers.any())).thenReturn(userResponse);
+        //        Mockito.when(userService.createUser(ArgumentMatchers.any())).thenReturn(userResponse);
         // when, then (and expect)
-        mockMvc.perform(MockMvcRequestBuilders
-                        .post("/users")
+        mockMvc.perform(MockMvcRequestBuilders.post("/users")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(requestBody))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.jsonPath("code").value(7))
-                .andExpect(MockMvcResultMatchers.jsonPath("message").value("Username must be between 3 to 20 characters"))
-        ;
+                .andExpect(
+                        MockMvcResultMatchers.jsonPath("message").value("Username must be between 3 to 20 characters"));
         // then
     }
 }

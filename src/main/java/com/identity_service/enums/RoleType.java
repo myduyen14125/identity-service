@@ -1,7 +1,7 @@
 package com.identity_service.enums;
 
 public enum RoleType {
-//    2 roles: admin and user
+    //    2 roles: admin and user
     ADMIN(1),
     USER(2);
 

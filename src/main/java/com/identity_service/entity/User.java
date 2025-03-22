@@ -1,16 +1,16 @@
 package com.identity_service.entity;
 
-import com.identity_service.enums.RoleType;
+import java.time.LocalDate;
+import java.util.List;
+
 import jakarta.persistence.*;
+
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Set;
-
 @Entity
-@Getter @Setter
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -19,13 +19,16 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
+
     String username;
     String password;
     String firstName;
     String lastName;
     String email;
     Integer phone;
+
     @ManyToMany
     List<Role> roles;
+
     LocalDate dob;
 }

@@ -1,10 +1,7 @@
 package com.identity_service.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.identity_service.dto.request.UserCreationRequest;
-import com.identity_service.dto.response.UserResponse;
-import lombok.extern.slf4j.Slf4j;
+import java.time.LocalDate;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +17,12 @@ import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.time.LocalDate;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.identity_service.dto.request.UserCreationRequest;
+import com.identity_service.dto.response.UserResponse;
+
+import lombok.extern.slf4j.Slf4j;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -42,6 +44,7 @@ public class UserControllerIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
+
     private UserCreationRequest userCreationRequest;
     private UserResponse userResponse;
     private LocalDate dob;
@@ -75,16 +78,14 @@ public class UserControllerIntegrationTest {
         String requestBody = objectMapper.writeValueAsString(userCreationRequest);
 
         // when, then (and expect)
-        var res = mockMvc.perform(MockMvcRequestBuilders
-                .post("/users")
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .content(requestBody))
+        var res = mockMvc.perform(MockMvcRequestBuilders.post("/users")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(requestBody))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("code").value(0))
                 .andExpect(MockMvcResultMatchers.jsonPath("result.username").value(userCreationRequest.getUsername()))
                 .andExpect(MockMvcResultMatchers.jsonPath("result.firstName").value(userCreationRequest.getFirstName()))
-                .andExpect(MockMvcResultMatchers.jsonPath("result.lastName").value(userCreationRequest.getLastName()))
-        ;
+                .andExpect(MockMvcResultMatchers.jsonPath("result.lastName").value(userCreationRequest.getLastName()));
         log.info("Res: " + res.andReturn().getResponse().getContentAsString());
         // then
     }
@@ -98,14 +99,13 @@ public class UserControllerIntegrationTest {
         String requestBody = objectMapper.writeValueAsString(userCreationRequest);
 
         // when, then (and expect)
-        mockMvc.perform(MockMvcRequestBuilders
-                        .post("/users")
+        mockMvc.perform(MockMvcRequestBuilders.post("/users")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .content(requestBody))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.jsonPath("code").value(7))
-                .andExpect(MockMvcResultMatchers.jsonPath("message").value("Username must be between 3 to 20 characters"))
-        ;
+                .andExpect(
+                        MockMvcResultMatchers.jsonPath("message").value("Username must be between 3 to 20 characters"));
         // then
     }
 }

@@ -1,7 +1,10 @@
 package com.identity_service.exception;
 
+import java.util.Map;
+import java.util.Objects;
+
 import jakarta.validation.ConstraintViolation;
-import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -10,9 +13,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.identity_service.dto.response.ApiResponse;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import lombok.extern.slf4j.Slf4j;
 
 @ControllerAdvice
 @Slf4j
@@ -27,9 +28,7 @@ public class GlobalExceptionHandler {
         ApiResponse apiResponse = new ApiResponse();
         apiResponse.setCode(errorCode.getCode());
         apiResponse.setMessage(errorCode.getMessage());
-        return ResponseEntity
-                .status(errorCode.getHttpStatusCode())
-                .body(apiResponse);
+        return ResponseEntity.status(errorCode.getHttpStatusCode()).body(apiResponse);
     }
 
     // handle general most exception
@@ -45,8 +44,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AccessDeniedException.class)
     ResponseEntity<ApiResponse> handleAccessDeniedException(AccessDeniedException e) {
         ErrorCode errorCode = ErrorCode.UNAUTHORIZED;
-        return ResponseEntity
-                .status(errorCode.getHttpStatusCode())
+        return ResponseEntity.status(errorCode.getHttpStatusCode())
                 .body(ApiResponse.builder()
                         .code(errorCode.getCode())
                         .message(errorCode.getMessage())
@@ -60,8 +58,8 @@ public class GlobalExceptionHandler {
         try {
             errorCode = ErrorCode.valueOf(errorKey);
 
-            var constraintViolation = e.getBindingResult()
-                    .getAllErrors().getFirst().unwrap(ConstraintViolation.class);
+            var constraintViolation =
+                    e.getBindingResult().getAllErrors().getFirst().unwrap(ConstraintViolation.class);
             attributes = constraintViolation.getConstraintDescriptor().getAttributes();
             log.info("Attributes" + attributes.toString());
         } catch (IllegalArgumentException illegalArgumentException) {
@@ -69,14 +67,16 @@ public class GlobalExceptionHandler {
         }
         ApiResponse apiResponse = new ApiResponse();
         apiResponse.setCode(errorCode.getCode());
-        apiResponse.setMessage(Objects.nonNull(attributes) ? mapAttribute(errorCode.getMessage(), attributes) : errorCode.getMessage());
+        apiResponse.setMessage(
+                Objects.nonNull(attributes)
+                        ? mapAttribute(errorCode.getMessage(), attributes)
+                        : errorCode.getMessage());
         return ResponseEntity.badRequest().body(apiResponse);
     }
 
     private String mapAttribute(String message, Map<String, Object> attributes) {
         String minValue = attributes.get(MIN_ATTRIBUTE).toString();
         String maxValue = attributes.get(MAX_ATTRIBUTE).toString();
-        return message.replace("{" + MIN_ATTRIBUTE + "}", minValue)
-                .replace("{" + MAX_ATTRIBUTE + "}", maxValue);
+        return message.replace("{" + MIN_ATTRIBUTE + "}", minValue).replace("{" + MAX_ATTRIBUTE + "}", maxValue);
     }
 }

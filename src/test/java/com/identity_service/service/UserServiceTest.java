@@ -1,10 +1,13 @@
 package com.identity_service.service;
 
-import com.identity_service.dto.request.UserCreationRequest;
-import com.identity_service.dto.response.UserResponse;
-import com.identity_service.entity.User;
-import com.identity_service.exception.AppException;
-import com.identity_service.repository.UserRepository;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+
+import java.time.LocalDate;
+import java.util.Optional;
+
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,13 +17,11 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.time.LocalDate;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
+import com.identity_service.dto.request.UserCreationRequest;
+import com.identity_service.dto.response.UserResponse;
+import com.identity_service.entity.User;
+import com.identity_service.exception.AppException;
+import com.identity_service.repository.UserRepository;
 
 @SpringBootTest
 @TestPropertySource("/test.properties")
@@ -30,6 +31,7 @@ public class UserServiceTest {
 
     @MockitoBean
     private UserRepository userRepository;
+
     private UserCreationRequest userCreationRequest;
     private UserResponse userResponse;
     private User user;
