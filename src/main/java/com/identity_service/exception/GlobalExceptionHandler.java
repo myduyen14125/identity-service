@@ -53,6 +53,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     ResponseEntity<ApiResponse> handleValidationException(MethodArgumentNotValidException e) {
+        e.getFieldError();
         String errorKey = e.getFieldError().getDefaultMessage();
         ErrorCode errorCode = ErrorCode.INVALID_PARAM;
         try {
@@ -65,7 +66,7 @@ public class GlobalExceptionHandler {
         } catch (IllegalArgumentException illegalArgumentException) {
             // log error
         }
-        ApiResponse apiResponse = new ApiResponse();
+        ApiResponse<?> apiResponse = new ApiResponse<>();
         apiResponse.setCode(errorCode.getCode());
         apiResponse.setMessage(
                 Objects.nonNull(attributes)
