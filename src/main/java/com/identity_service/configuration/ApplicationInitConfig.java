@@ -1,7 +1,13 @@
 package com.identity_service.configuration;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
+import com.identity_service.entity.Role;
+import com.identity_service.repository.RoleRepository;
+import lombok.experimental.NonFinal;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationRunner;
@@ -19,27 +25,41 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.val;
 
+@Slf4j
 @Configuration
 @RequiredArgsConstructor()
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ApplicationInitConfig {
-    private static final Logger log = LoggerFactory.getLogger(ApplicationInitConfig.class);
     private PasswordEncoder passwordEncoder;
+
+    @NonFinal
+    static final String ADMIN_USER_NAME = "admin";
+    @NonFinal
+    static final String ADMIN_USER_PASSWORD = "admin";
 
     @Bean
     @ConditionalOnProperty(
             prefix = "spring",
-            value = "datasource.driverClassName",
+            value = "datasource.driver-class-name",
             havingValue = "com.mysql.cj.jdbc.Driver")
-    ApplicationRunner applicationRunner(UserRepository userRepository) {
+    ApplicationRunner applicationRunner(UserRepository userRepository, RoleRepository roleRepository) {
         return args -> {
-            if (userRepository.findByUsername("admin").isEmpty()) {
-                val roles = new HashSet<RoleType>();
-                roles.add(RoleType.ADMIN);
+            if (userRepository.findByUsername(ADMIN_USER_NAME).isEmpty()) {
+                roleRepository.save(Role.builder()
+                                .name(RoleType.USER.name())
+                                .description("User role")
+                                .build());
+                Role adminRole = Role.builder()
+                        .name(RoleType.ADMIN.name())
+                        .description("Admin role")
+                        .build();
+
+                List<Role> adminRoles = new ArrayList<>();
+                adminRoles.add(adminRole);
                 User user = User.builder()
-                        .username("admin")
-                        .password(passwordEncoder.encode("admin"))
-                        //                        .roles(roles)
+                        .username(ADMIN_USER_NAME)
+                        .password(passwordEncoder.encode(ADMIN_USER_PASSWORD))
+                        .roles(adminRoles)
                         .build();
                 userRepository.save(user);
                 log.warn("admin user has been already crated with default config");

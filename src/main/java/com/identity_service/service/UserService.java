@@ -2,7 +2,11 @@ package com.identity_service.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
+import com.identity_service.entity.Role;
+import com.identity_service.enums.RoleType;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,20 +38,16 @@ public class UserService {
     PasswordEncoder passwordEncoder;
 
     public UserResponse createUser(UserCreationRequest request) {
-        if (userRepository.existsByUsername(request.getUsername())) {
+        User user = userMapper.toUser(request);
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        List<Role> roles = new ArrayList<>();
+        roleRepository.findById(RoleType.USER.name()).ifPresent(roles::add);
+        user.setRoles(roles);
+        try {
+            userRepository.save(user);
+        } catch (DataIntegrityViolationException e) {
             throw new AppException(ErrorCode.USER_ALREADY_EXISTS);
         }
-
-        User user = userMapper.toUser(request);
-
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        //        if (request.getRole() == null) {
-        //            HashSet<RoleType> roles = new HashSet<>();
-        //            roles.add(RoleType.getDefault());
-        ////            user.setRoles(roles);
-        //        }
-
-        userRepository.save(user);
         return userMapper.toUserResponse(user);
     }
 
@@ -63,7 +63,7 @@ public class UserService {
 
     //    @PreAuthorize("hasRole('ADMIN')")
     //    @PreAuthorize("hasAuthority('APPROVE_POST')")
-    @PreAuthorize("hasRole('ADMIN') and hasAuthority('APPROVE_POST')")
+    @PreAuthorize("hasRole('ADMIN') or hasAuthority('APPROVE_POST')")
     public List<UserResponse> getAllUsers() {
         List<User> users = userRepository.findAll();
         List<UserResponse> userResponses = new ArrayList<>();
