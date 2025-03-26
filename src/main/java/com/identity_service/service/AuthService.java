@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.StringJoiner;
 import java.util.UUID;
 
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,11 +39,11 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.val;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthService {
-    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
     UserRepository userRepository;
     InvalidatedTokenRepository tokenRepository;
     private final InvalidatedTokenRepository invalidatedTokenRepository;
@@ -60,6 +61,7 @@ public class AuthService {
     protected long REFRESHABLE_DURATION;
 
     public AuthResponse authenticate(AuthRequest request) {
+        log.info("Sign Key{}", SIGNER_KEY);
         val user = userRepository
                 .findByUsername(request.getUsername())
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
