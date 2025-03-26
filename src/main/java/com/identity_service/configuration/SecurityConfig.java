@@ -1,5 +1,9 @@
 package com.identity_service.configuration;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,10 +20,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
-
-import java.util.List;
-
-import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
@@ -45,11 +45,11 @@ public class SecurityConfig {
         httpSecurity
                 .cors(withDefaults()) // Enable CORS
                 .authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS)
-                .permitAll()
-                //                                .requestMatchers(HttpMethod.GET,
-                // PROTECTED_ENDPOINTS).hasRole(RoleType.ADMIN.name())
-                .anyRequest()
-                .authenticated());
+                        .permitAll()
+                        //                                .requestMatchers(HttpMethod.GET,
+                        // PROTECTED_ENDPOINTS).hasRole(RoleType.ADMIN.name())
+                        .anyRequest()
+                        .authenticated());
 
         // verify endpoints that need accessToken
         httpSecurity.oauth2ResourceServer(oAuth2 -> oAuth2.jwt(jwtConfigurer -> jwtConfigurer
@@ -65,7 +65,7 @@ public class SecurityConfig {
     public CorsFilter corsFilter() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
 
-        corsConfiguration.setAllowCredentials(true);  // Allow credentials
+        corsConfiguration.setAllowCredentials(true); // Allow credentials
         corsConfiguration.setAllowedOrigins(List.of("http://localhost:3000")); // Change to your frontend URL
         corsConfiguration.addAllowedMethod("*");
         corsConfiguration.addAllowedHeader("*");

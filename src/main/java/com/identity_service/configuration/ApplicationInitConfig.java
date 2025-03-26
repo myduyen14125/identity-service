@@ -1,29 +1,25 @@
 package com.identity_service.configuration;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
-import com.identity_service.entity.Role;
-import com.identity_service.repository.RoleRepository;
-import lombok.experimental.NonFinal;
-import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.identity_service.entity.Role;
 import com.identity_service.entity.User;
 import com.identity_service.enums.RoleType;
+import com.identity_service.repository.RoleRepository;
 import com.identity_service.repository.UserRepository;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import lombok.val;
+import lombok.experimental.NonFinal;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Configuration
@@ -34,6 +30,7 @@ public class ApplicationInitConfig {
 
     @NonFinal
     static final String ADMIN_USER_NAME = "admin";
+
     @NonFinal
     static final String ADMIN_USER_PASSWORD = "admin";
 
@@ -46,9 +43,9 @@ public class ApplicationInitConfig {
         return args -> {
             if (userRepository.findByUsername(ADMIN_USER_NAME).isEmpty()) {
                 roleRepository.save(Role.builder()
-                                .name(RoleType.USER.name())
-                                .description("User role")
-                                .build());
+                        .name(RoleType.USER.name())
+                        .description("User role")
+                        .build());
                 Role adminRole = Role.builder()
                         .name(RoleType.ADMIN.name())
                         .description("Admin role")

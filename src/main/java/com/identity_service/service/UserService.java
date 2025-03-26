@@ -2,10 +2,7 @@ package com.identity_service.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
-import com.identity_service.entity.Role;
-import com.identity_service.enums.RoleType;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,7 +13,9 @@ import org.springframework.stereotype.Service;
 import com.identity_service.dto.request.UserCreationRequest;
 import com.identity_service.dto.request.UserUpdateRequest;
 import com.identity_service.dto.response.UserResponse;
+import com.identity_service.entity.Role;
 import com.identity_service.entity.User;
+import com.identity_service.enums.RoleType;
 import com.identity_service.exception.AppException;
 import com.identity_service.exception.ErrorCode;
 import com.identity_service.mapper.UserMapper;
