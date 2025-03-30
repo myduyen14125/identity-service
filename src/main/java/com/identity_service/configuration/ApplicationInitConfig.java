@@ -46,10 +46,10 @@ public class ApplicationInitConfig {
                         .name(RoleType.USER.name())
                         .description("User role")
                         .build());
-                Role adminRole = Role.builder()
+                Role adminRole = roleRepository.save(Role.builder()
                         .name(RoleType.ADMIN.name())
                         .description("Admin role")
-                        .build();
+                        .build());
 
                 List<Role> adminRoles = new ArrayList<>();
                 adminRoles.add(adminRole);
