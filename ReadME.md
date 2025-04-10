@@ -20,7 +20,7 @@ This microservice is responsible for:
 ## Build application
 `mvn clean package`
 
-## Docker guideline
+## About Docker 
 ### Build docker image
 `docker build -t <account>/identity-service:0.9.0 .`
 ### Push docker image to Docker Hub
@@ -29,7 +29,7 @@ This microservice is responsible for:
 `docker network create <network_name>`
 ### Start MySQL in name-network
 `docker run --network <network_name> --name mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root -d mysql:9.2.0-oracle`
-### Run your application in devteria-network
+### Run your application in custom network
 `docker run --name identity-service --network <network_name> -p 8080:8080 -e DBMS_CONNECTION=jdbc:mysql://mysql:3306/identity_service 
 <account_docker_name>/identity-service:0.9.0`
 
@@ -50,5 +50,3 @@ $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | sudo tee /etc/apt/sou
 sudo apt-get update
 
 sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
-sudo docker run hello-world
